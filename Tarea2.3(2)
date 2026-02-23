@@ -1,0 +1,61 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def f(x):
+    return np.sin(x) - x/2
+
+def lagrange_interpolation(x, x_points, y_points):
+    n = len(x_points)
+    result = 0
+    for i in range(n):
+        term = y_points[i]
+        for j in range(n):
+            if i != j:
+                term *= (x - x_points[j]) / (x_points[i] - x_points[j])
+        result += term
+    return result
+
+def bisect(func, a, b, tol=1e-6, max_iter=100):
+    iteraciones = []
+    if func(a) * func(b) > 0:
+        raise ValueError("El intervalo no contiene una raíz")
+    for i in range(max_iter):
+        c = (a+b)/2
+        e_abs = abs(b-a)/2
+        e_rel = e_abs/abs(c) if c != 0 else 0
+        e_cuad = e_abs**2
+        iteraciones.append((i+1, c, e_abs, e_rel, e_cuad))
+        if abs(func(c)) < tol or e_abs < tol:
+            return c, iteraciones
+        if func(a)*func(c) < 0:
+            b = c
+        else:
+            a = c
+    return (a+b)/2, iteraciones
+
+# Puntos equidistantes
+x_points = np.array([0.0, 1.0, 2.0])
+y_points = f(x_points)
+
+x_vals = np.linspace(0, 2, 200)
+y_interp = [lagrange_interpolation(x, x_points, y_points) for x in x_vals]
+
+root, iteraciones = bisect(lambda x: lagrange_interpolation(x, x_points, y_points), 0, 2)
+
+# Tabla en consola
+print("Iteración | x_n      | Error absoluto | Error relativo | Error cuadrático")
+print("-----------------------------------------------------------------------")
+for it in iteraciones:
+    print(f"{it[0]:9d} | {it[1]:.6f} | {it[2]:.6e} | {it[3]:.6e} | {it[4]:.6e}")
+
+# Gráfica
+plt.figure(figsize=(8,6))
+plt.plot(x_vals, f(x_vals), '--b', label="f(x)")
+plt.plot(x_vals, y_interp, 'r', label="Interpolante de Lagrange")
+plt.axhline(0, color='black', linestyle='--')
+plt.axvline(root, color='green', linestyle='dotted', label=f"Raíz: {root:.4f}")
+plt.scatter(x_points, y_points, color='black', label="Puntos")
+plt.legend(); plt.grid(); plt.title("Ejercicio 2 - Interpolación")
+plt.show()
+
+print(f"\nRaíz aproximada Ejercicio 2: {root:.6f}")
