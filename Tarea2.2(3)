@@ -1,0 +1,42 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+def g(x): return np.cos(x)
+
+def error_absoluto(x_new, x_old): return abs(x_new - x_old)
+def error_relativo(x_new, x_old): return abs((x_new - x_old)/x_new)
+def error_cuadratico(x_new, x_old): return (x_new - x_old)**2
+
+def punto_fijo(x0, tol=1e-5, max_iter=100):
+    iteraciones, ea, er, ec = [], [], [], []
+    x_old = x0
+    for i in range(max_iter):
+        x_new = g(x_old)
+        e_abs, e_rel, e_cuad = error_absoluto(x_new, x_old), error_relativo(x_new, x_old), error_cuadratico(x_new, x_old)
+        iteraciones.append((i+1, x_new, e_abs, e_rel, e_cuad))
+        ea.append(e_abs); er.append(e_rel); ec.append(e_cuad)
+        if e_abs < tol: break
+        x_old = x_new
+    return iteraciones, ea, er, ec
+
+x0 = 0.5
+iteraciones, ea, er, ec = punto_fijo(x0)
+
+print("Iteración | x_n      | Error absoluto | Error relativo | Error cuadrático")
+print("-----------------------------------------------------------------------")
+for it in iteraciones:
+    print(f"{it[0]:9d} | {it[1]:.6f} | {it[2]:.6e} | {it[3]:.6e} | {it[4]:.6e}")
+
+x_vals = np.linspace(-1, 1, 200)
+plt.plot(x_vals, g(x_vals), label="g(x)", color="blue")
+plt.plot(x_vals, x_vals, linestyle="dashed", color="red", label="y = x")
+plt.scatter([it[1] for it in iteraciones], [g(it[1]) for it in iteraciones], color="black")
+plt.title("Método de Punto Fijo - Ejercicio 3")
+plt.legend(); plt.grid(); plt.show()
+
+plt.plot(range(1,len(ea)+1), ea, marker="o", label="Error absoluto")
+plt.plot(range(1,len(er)+1), er, marker="s", label="Error relativo")
+plt.plot(range(1,len(ec)+1), ec, marker="^", label="Error cuadrático")
+plt.yscale("log"); plt.legend(); plt.grid()
+plt.title("Evolución de Errores - Ejercicio 3")
+plt.show()
